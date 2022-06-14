@@ -36,7 +36,7 @@ liq-cap max-supply > abort"liq-cap can't be more than max-supply"
 
 <b 
     0x01 8 u,   // offchain
-    "bafkreiast4fqlkp4upyu2cvo7fn7aabjusx765yzvqitsr4rpwfvhjguhy" $,    // ipfs cid
+    "ipfs://bafkreiast4fqlkp4upyu2cvo7fn7aabjusx765yzvqitsr4rpwfvhjguhy" $,    // ipfs cid
 b>  =: full-content
 
 <b

@@ -154,7 +154,7 @@ _ load_data() inline {
     int buy_amount = msg_value - mint_amount;
 
     ;; for gas and fees, bcs price low
-    throw_if(ext_code::err_buy_amount(), buy_amount < (extlib::1ton() * 5));
+    throw_if(ext_code::err_buy_amount(), buy_amount < (extlib::1ton() - mint_amount));
     throw_if(ext_code::err_buy_amount(), buy_amount < price);
     
     int jamount = buy_amount * extlib::1ton() / price;
