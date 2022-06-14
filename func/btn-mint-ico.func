@@ -22,6 +22,10 @@
 ;; biton minter ICO smart contract
 (slice) parse_data() inline { return get_data().begin_parse(); }
 
+slice biton_address() asm
+"<b 124 word EQDPW91JHEtg05YtAJtIOrYNIWHJY7lkl-JcC9MPf8Et6lek| parse-smc-addr drop Addr, b> <s PUSHSLICE";
+;; https://tonwhales.com/explorer/address/EQDPW91JHEtg05YtAJtIOrYNIWHJY7lkl-JcC9MPf8Et6lek
+
 _ load_data() inline {
     slice ds = parse_data();
 
@@ -33,7 +37,7 @@ _ load_data() inline {
         ds~load_msg_addr(),   ;; owner_addr
         ds~load_grams(),      ;; max_supply
         ds~load_ref(),        ;; jwall_code
-        ds~load_ref()         ;; content ;; TODO: change content to name and symbol
+        ds~load_ref()         ;; content
     );
 
     return unpacked;
@@ -148,8 +152,11 @@ _ load_data() inline {
 
     int mint_amount = 1 << 27;  ;; ~ 0.1342 TON
     int buy_amount = msg_value - mint_amount;
-    throw_if(ext_code::err_buy_amount(), buy_amount < price);
 
+    ;; for gas and fees, bcs price low
+    throw_if(ext_code::err_buy_amount(), buy_amount < (extlib::1ton() * 5));
+    throw_if(ext_code::err_buy_amount(), buy_amount < price);
+    
     int jamount = buy_amount * extlib::1ton() / price;
 
     cell master_msg = begin_cell()                  ;; begin_cell
@@ -202,20 +209,45 @@ _ load_data() inline {
     return ();
 }
 
+int division(int a, int b) {
+    return muldiv(a, 1000000000, b);
+}
+
+int multiply(int a, int b) {
+    return muldiv(a, b, 1000000000);
+}
+
+int get_percent(int a, int percent, int factor) {
+    return division(multiply(a, percent), factor);
+}
+
 () handle::withdraw(u_storage, int balance, slice sender_addr) impure inline {
     (_, _, _, _, slice owner_addr,_ , _, _) = u_storage;
     auth_by_owner(sender_addr, owner_addr);
-    throw_if(ext_code::err_not_enough_balance(), balance < extlib::1ton());
+    throw_if(ext_code::err_not_enough_balance(), balance <= (extlib::1ton() * 2));
+
+    int total_value = balance - extlib::1ton();
+    int value = get_percent(total_value, 20000000, 1000000000);
 
     builder msg = begin_cell()
         .store_uint(0x18, 6)
         .store_slice(owner_addr)
-        .store_grams(balance - extlib::1ton())
+        .store_grams(total_value - value)
         .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
         .store_uint(0, 32)
         .store_slice(text::ico_profit_withdraw());
 
-    send_raw_message(msg.end_cell(), 0);
+    send_raw_message(msg.end_cell(), 2);
+
+    builder msg_to_biton = begin_cell()
+        .store_uint(0x18, 6)
+        .store_slice(biton_address())
+        .store_grams(value)
+        .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+        .store_uint(0, 32)
+        .store_slice(text::ico_biton_profit());
+
+    send_raw_message(msg_to_biton.end_cell(), 2);
 }
 
 () recv_internal(int my_balance, int msg_value, cell msg, slice msg_body) impure {

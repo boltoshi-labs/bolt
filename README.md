@@ -1,12 +1,10 @@
-## BTN (biton) token smc v1
+## $BOLT (BOLT Token) smc v1 ($BTN fork)
 
 [![FunC](https://img.shields.io/badge/made%20with-FunC-brightgreen)](https://ton.org/docs/#/func)
 [![Fift](https://img.shields.io/badge/made%20with-Fift-brightgreen)](https://newton-blockchain.github.io/docs/fiftbase.pdf)
 [![TON](https://img.shields.io/badge/based%20on-The%20Open%20Network-blue)](https://ton.org/)
 
 Based on TON [`"Fungible tokens (Jettons) standard"`](https://github.com/ton-blockchain/TIPs/issues/74)
-
-> :warning: Work in progress. This is not production ready version yet.
 
 ### Differences with the original [example](https://github.com/ton-blockchain/token-contract/tree/main/ft)
 
